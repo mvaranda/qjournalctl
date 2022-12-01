@@ -32,6 +32,16 @@
 #include <QCompleter>
 #include <QThread>
 
+#define UNIT_ALL "all"
+#define UNIT_VIGIL_ALL "vigil all"
+
+const char * unties[] = {
+    UNIT_ALL,
+    UNIT_VIGIL_ALL,
+#include "unities.h"
+    nullptr
+};
+
 ShowBootLog::ShowBootLog(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::ShowBootLog)
@@ -43,6 +53,7 @@ ShowBootLog::ShowBootLog(QWidget *parent) :
 // todo: Fix this mess!
 ShowBootLog::ShowBootLog(QWidget *parent, bool completeJournal, bool realtime, bool reverse, QString bootid, Connection *connection) :
     QDialog(parent),
+    unitOption(""),
     ui(new Ui::ShowBootLog)
 {
     // Call simple constructor first
@@ -75,6 +86,13 @@ ShowBootLog::ShowBootLog(QWidget *parent, bool completeJournal, bool realtime, b
         } else {
             ui->label->setText("Showing journal of boot #" + bootid);
         }
+    }
+
+    // load unit combo from from file
+    const char  ** u = &unties[0];
+    while(*u) {
+        ui->unitCombo->addItem(*u);
+        u++;
     }
 
     // Remote connections require initial setup
@@ -160,6 +178,9 @@ void ShowBootLog::updateBootLog(bool keepIdentifiers)
             command = "journalctl -q -a -p " + QString::number(maxPriority) + " -b " + bootid + sinceStr + untilStr;
         }
     }
+
+    // add unit option
+    command += unitOption;
 
     if(this->reverse){
         command = command + " -r";
@@ -410,5 +431,27 @@ void ShowBootLog::on_exportSelectionButton_clicked()
     QString fileName = QFileDialog::getSaveFileName(this, "Export selected journal entries");
 
     writeToExportFile(fileName, selection.toLocal8Bit().data());
+}
+
+
+void ShowBootLog::on_unitCombo_currentTextChanged(const QString &unit)
+{
+    qDebug () << "selected unit: " << unit;
+
+    unitOption = "";
+    if (unit.compare(UNIT_VIGIL_ALL) == 0) {
+        const char  ** u = &unties[2];
+        while(*u) {
+            unitOption += " -u ";
+            unitOption += *u;
+            u++;
+        }
+    }
+    else if (unit.compare(UNIT_ALL ) != 0) {
+        unitOption += " -u ";
+        unitOption += unit;
+    }
+    qDebug () << "unitOption: " << unitOption;
+    updateBootLog(true);
 }
 

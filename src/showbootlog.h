@@ -66,6 +66,8 @@ private slots:
 
     void on_horizontalSlider_valueChanged(int value);
 
+    void on_unitCombo_currentTextChanged(const QString &arg1);
+
 private:
     void updateBootLog(bool keepIdentifiers=false);
 
@@ -79,6 +81,7 @@ private:
     bool realtime=false;
     bool reverse=false;
     int maxPriority=3;
+    QString unitOption;
 
     // Internal display variables
     int numberOfBytesRead=0;

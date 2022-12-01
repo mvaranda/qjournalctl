@@ -1,3 +1,17 @@
+
+# 3xLOGIC Branch
+
+Code was modified to add a filter for unit (option: -u unit).
+In case pre-defined unities are necessary then just change the file
+unities.h with your entries.
+<br>
+This branch also has a specific changes for 3xLOGIC Debian packaging. Makefile was changes as well as the build script.<br>
+3xLOGIC Developers: goto packaging/deb and run: ./build_deb_v.sh<br>
+Debian output is under release folder.<br>
+<br>
+following is the original README content.
+
+
 # QJournalctl v0.6.3
 
 [![Build Status](https://travis-ci.org/pentix/qjournalctl.svg?branch=master)](https://travis-ci.org/pentix/qjournalctl)

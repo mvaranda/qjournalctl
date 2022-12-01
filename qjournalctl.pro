@@ -44,6 +44,7 @@ HEADERS  += src/mainwindow.h \
 	src/remote.h \
 	src/sshconnectionserializer.h \
 	src/sshconnectionsettings.h \
+	src/unities.h \
 	src/version.h \
 	src/showbootlog.h
 
