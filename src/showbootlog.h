@@ -13,6 +13,7 @@
 #include <QProcess>
 #include <QTextDocument>
 #include <QSet>
+#include <QAbstractItemView>
 
 #include "connection.h"
 #include "sshconnectionsettings.h"
@@ -68,6 +69,18 @@ private slots:
 
     void on_unitCombo_currentTextChanged(const QString &arg1);
 
+    void on_grepCombo_currentTextChanged(const QString &arg1);
+
+    void on_grepEditBox_textChanged(const QString &arg1);
+
+    void on_grepClear_clicked();
+
+    void on_grepFilterBt_clicked();
+
+    void on_caseCheckBox_clicked();
+
+    void on_allCheckBox_clicked();
+
 private:
     void updateBootLog(bool keepIdentifiers=false);
 
@@ -82,6 +95,8 @@ private:
     bool reverse=false;
     int maxPriority=3;
     QString unitOption;
+    QString grepFilterText;
+    QString grepIncompleteLine;
 
     // Internal display variables
     int numberOfBytesRead=0;
@@ -89,6 +104,8 @@ private:
     QString identifierFlags="";
     QSet<QString> allIdentifiers;
     QSet<QString> acceptedIdentifiers;
+    QAbstractItemView* grepView;
+    bool eventFilter(QObject *o, QEvent *e);
 
     void execute_find(QRegExp regexp, QTextDocument::FindFlags findFlags);
     void execute_find(QString string, QTextDocument::FindFlags findFlags);

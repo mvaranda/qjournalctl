@@ -21,6 +21,9 @@
     "vigil.pos",
     "vigil.remote.registration",
     "vigil.smart.search",
-    "vigil.sql.manager",
+    "vigil.devices",
+    "vigil.remote.update",
     "vigil.stream.server",
     "vigil.update.srv",
+    "mssql-server",
+

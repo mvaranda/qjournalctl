@@ -1,5 +1,5 @@
 Package: qjournalctl
-Version: 0.6.3-1
+Version: 0.6.3-2
 Section: admin
 Priority: optional
 Architecture: amd64

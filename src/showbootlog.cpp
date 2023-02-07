@@ -35,6 +35,8 @@
 #define UNIT_ALL "all"
 #define UNIT_VIGIL_ALL "vigil all"
 
+#define HIDE_SYSLOG_FILTER
+
 const char * unties[] = {
     UNIT_ALL,
     UNIT_VIGIL_ALL,
@@ -53,8 +55,11 @@ ShowBootLog::ShowBootLog(QWidget *parent) :
 // todo: Fix this mess!
 ShowBootLog::ShowBootLog(QWidget *parent, bool completeJournal, bool realtime, bool reverse, QString bootid, Connection *connection) :
     QDialog(parent),
+    ui(new Ui::ShowBootLog),
+    maxPriority(7),
     unitOption(""),
-    ui(new Ui::ShowBootLog)
+    grepFilterText(""),
+    grepIncompleteLine("")
 {
     // Call simple constructor first
     ui->setupUi(this);
@@ -63,6 +68,14 @@ ShowBootLog::ShowBootLog(QWidget *parent, bool completeJournal, bool realtime, b
     // Set save icon for the export buttons
     ui->exportButton->setIcon(style()->standardIcon(QStyle::SP_DialogSaveButton));
     ui->exportSelectionButton->setIcon(style()->standardIcon(QStyle::SP_DialogSaveButton));
+
+  #ifdef HIDE_SYSLOG_FILTER
+    ui->identifiersLineEdit->hide();
+    ui->filterButton->hide();
+    ui->clearButton->hide();
+    ui->filterSpacer->changeSize(0,0);
+    ui->filterLabel->setText("Grep Filter");
+  #endif
 
     // Create find and escape shortcut
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_F), this, SLOT(on_find_keyshortcut_triggered()));
@@ -94,6 +107,15 @@ ShowBootLog::ShowBootLog(QWidget *parent, bool completeJournal, bool realtime, b
         ui->unitCombo->addItem(*u);
         u++;
     }
+
+    // load greb combo
+    ui->grepCombo->addItem("None");
+    ui->grepCombo->addItem("sql");
+    ui->grepCombo->addItem("SQL");
+    grepView = ui->grepCombo->view();
+    grepView->viewport()->installEventFilter(this);
+    grepView->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(grepView, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(list_context_menu(QPoint)));
 
     // Remote connections require initial setup
     if(connection->isRemote()){
@@ -179,8 +201,13 @@ void ShowBootLog::updateBootLog(bool keepIdentifiers)
         }
     }
 
+    // show blob's content
+    if (ui->allCheckBox->isChecked())
+        command += " --all ";
+
     // add unit option
     command += unitOption;
+
 
     if(this->reverse){
         command = command + " -r";
@@ -199,6 +226,7 @@ void ShowBootLog::updateBootLog(bool keepIdentifiers)
 
     // Reset byte counter
     numberOfBytesRead = 0;
+    // qDebug () << "command: " + command;
     connection->run(command);
 }
 
@@ -222,9 +250,59 @@ void ShowBootLog::appendToBootLog(QString readString)
         empty = false;
     }
 
-    // Append string to the UI and increment byte counter
-    ui->plainTextEdit->appendPlainText(readString);
-    numberOfBytesRead += readString.size();
+
+
+    if (grepFilterText.length() > 0) {
+        bool case_s = ui->caseCheckBox->isChecked();
+        QString grepFilterText_lower = grepFilterText.toLower();
+
+        if (grepIncompleteLine.length() > 0) {
+            readString = grepIncompleteLine + readString;
+            grepIncompleteLine = "";
+        }
+
+        int last_newline_idx = readString.lastIndexOf('\n');
+        if (last_newline_idx < 0) {
+            // qDebug() << "no new_line";
+            grepIncompleteLine += readString;
+        }
+        else if (last_newline_idx == readString.length() - 1) {
+            qDebug() << "line is complete";
+        }
+        else {
+            grepIncompleteLine = readString.mid(last_newline_idx + 1);
+            readString = readString.mid(0, last_newline_idx);
+        }
+
+        QString line, toDisplay;
+        QTextStream stream(&readString);
+        while (stream.readLineInto(&line)) {
+            if (line.length() == 0) continue;
+            if (case_s) {
+                if (line.indexOf(grepFilterText) >= 0) {
+                    toDisplay = toDisplay + line + "\n";
+                    // qDebug() << "add: " + line;
+                }
+            } else {
+                QString line_lower = line.toLower();
+                if (line_lower.indexOf(grepFilterText_lower) >= 0) {
+                    toDisplay = toDisplay + line + "\n";
+                    // qDebug() << "add: " + line;
+                }
+            }
+        }
+        // Append string to the UI and increment byte counter
+        ui->plainTextEdit->appendPlainText(toDisplay.trimmed());
+
+    } else {
+        // Append string to the UI and increment byte counter
+        ui->plainTextEdit->appendPlainText(readString);
+    }
+    numberOfBytesRead += readString.size(); // total even if we drop filtered bytes
+
+
+
+
     ui->plainTextEdit->ensureCursorVisible();
 
     // Update "numberOfEntries" label
@@ -436,7 +514,7 @@ void ShowBootLog::on_exportSelectionButton_clicked()
 
 void ShowBootLog::on_unitCombo_currentTextChanged(const QString &unit)
 {
-    qDebug () << "selected unit: " << unit;
+    // qDebug () << "selected unit: " << unit;
 
     unitOption = "";
     if (unit.compare(UNIT_VIGIL_ALL) == 0) {
@@ -451,7 +529,104 @@ void ShowBootLog::on_unitCombo_currentTextChanged(const QString &unit)
         unitOption += " -u ";
         unitOption += unit;
     }
-    qDebug () << "unitOption: " << unitOption;
+    // qDebug () << "unitOption: " << unitOption;
     updateBootLog(true);
+}
+
+
+void ShowBootLog::on_grepCombo_currentTextChanged(const QString &grep_txt)
+{
+    // qDebug () << "selected Grep: " << grep_txt;
+    //grepFilterText = grep_txt;
+    if (grep_txt.compare("None")) {
+        on_grepFilterBt_clicked();
+    }
+}
+
+
+void ShowBootLog::on_grepEditBox_textChanged(const QString &txt)
+{
+     // qDebug () << "Text Grep: " << txt;
+     if (txt.length() > 0) {
+         ui->grepCombo->setEnabled(false);
+         ui->grepEditBox->setStyleSheet("background-color: yellow;");
+         //grepFilterText = txt;
+     }
+     else {
+         ui->grepCombo->setEnabled(true);
+         ui->grepEditBox->setStyleSheet("background-color: white;");
+         ui->grepCombo->setCurrentIndex(0);
+         //grepFilterText.clear();
+     }
+}
+
+bool ShowBootLog::eventFilter(QObject *o, QEvent *e)
+{
+    // qDebug () << "Got Grep Event: ";
+    return false;
+}
+
+
+void ShowBootLog::on_grepClear_clicked()
+{
+    QString combo = ui->grepCombo->currentText();
+    QString txt = ui->grepEditBox->displayText();
+    grepFilterText = "";
+    if (txt.length() > 0) {
+        grepFilterText = txt;
+    }
+    else if (combo.compare("None") != 0) {
+        grepFilterText = combo;
+    }
+
+    if (grepFilterText.length() > 0) {
+        grepFilterText = "";
+        ui->grepCombo->setEnabled(true);
+        ui->grepCombo->setCurrentIndex(0);
+        ui->grepEditBox->setEnabled(true);
+        ui->grepFilterBt->setEnabled(true);
+        ui->grepEditBox->setStyleSheet("background-color: white;");
+        ui->grepEditBox->clear();
+        updateBootLog(true);
+    }
+
+}
+
+
+void ShowBootLog::on_grepFilterBt_clicked()
+{
+    QString combo = ui->grepCombo->currentText();
+    QString txt = ui->grepEditBox->displayText();
+    grepFilterText = "";
+    if (txt.length() > 0) {
+        grepFilterText = txt;
+    }
+    else if (combo.compare("None") != 0) {
+        grepFilterText = combo;
+    }
+
+    if (grepFilterText.length() > 0) {
+        ui->grepCombo->setEnabled(false);
+        ui->grepEditBox->setEnabled(false);
+        ui->grepFilterBt->setEnabled(false);
+        updateBootLog(true);
+    }
+
+}
+
+
+void ShowBootLog::on_caseCheckBox_clicked()
+{
+    if (grepFilterText.length() > 0) {
+        updateBootLog(true);
+    }
+}
+
+
+void ShowBootLog::on_allCheckBox_clicked()
+{
+    if (grepFilterText.length() > 0) {
+        updateBootLog(true);
+    }
 }
 

@@ -556,7 +556,7 @@ connectiondialog.o: ../../src/connectiondialog.cpp ../../src/connectiondialog.h 
 		../../src/connection.h \
 		../../src/local.h \
 		../../src/remote.h \
-		ui_connectiondialog.h \
+		../../ui_connectiondialog.h \
 		../../src/exceptions.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o connectiondialog.o ../../src/connectiondialog.cpp
 
@@ -572,7 +572,7 @@ connectionmanager.o: ../../src/connectionmanager.cpp ../../src/connectionmanager
 		../../src/local.h \
 		../../src/remote.h \
 		../../src/sshconnectionsettings.h \
-		ui_connectionmanager.h \
+		../../ui_connectionmanager.h \
 		../../src/connectiondialog.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o connectionmanager.o ../../src/connectionmanager.cpp
 
@@ -588,7 +588,7 @@ mainwindow.o: ../../src/mainwindow.cpp ../../src/mainwindow.h \
 		../../src/remote.h \
 		../../src/sshconnectionsettings.h \
 		../../src/sshconnectionserializer.h \
-		ui_mainwindow.h \
+		../../ui_mainwindow.h \
 		../../src/aboutdialog.h \
 		../../src/showbootlog.h \
 		../../src/connectiondialog.h \
@@ -597,12 +597,12 @@ mainwindow.o: ../../src/mainwindow.cpp ../../src/mainwindow.h \
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o mainwindow.o ../../src/mainwindow.cpp
 
 aboutdialog.o: ../../src/aboutdialog.cpp ../../src/aboutdialog.h \
-		ui_aboutdialog.h \
+		../../ui_aboutdialog.h \
 		../../src/version.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o aboutdialog.o ../../src/aboutdialog.cpp
 
 passworddialog.o: ../../src/passworddialog.cpp ../../src/passworddialog.h \
-		ui_passworddialog.h \
+		../../ui_passworddialog.h \
 		../../src/sshconnectionsettings.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o passworddialog.o ../../src/passworddialog.cpp
 
@@ -617,7 +617,7 @@ showbootlog.o: ../../src/showbootlog.cpp ../../src/showbootlog.h \
 		../../src/local.h \
 		../../src/remote.h \
 		../../src/sshconnectionsettings.h \
-		ui_showbootlog.h \
+		../../ui_showbootlog.h \
 		../../src/unities.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o showbootlog.o ../../src/showbootlog.cpp
 

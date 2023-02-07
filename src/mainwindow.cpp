@@ -58,6 +58,7 @@ MainWindow::MainWindow(QWidget *parent) :
         ui->actionSizeOfTheJournalOnTheDisk->setDisabled(true);
         ui->actionLoadBoots->setDisabled(true);
     #endif
+
 }
 
 MainWindow::~MainWindow()
