@@ -1,4 +1,4 @@
-#/bin/bash
+#!/usr/bin/bash
 
 NAME=qjournalctl
 VERSION=0.6.3
@@ -11,9 +11,9 @@ QT_SELECT=qt5 qmake ../../qjournalctl.pro -r -spec linux-g++ CONFIG+=release
 make -j$(nproc)
 
 # Move required files
-cp -r ../../packaging/files/* "$OUT/"
-mkdir -p "$OUT/usr/bin"
-mv qjournalctl "$OUT/usr/bin"
+mkdir -p $OUT/usr/bin
+cp -r ../../packaging/files/usr $OUT/
+mv qjournalctl $OUT/usr/bin/
 
 # debian pkg files
 mkdir -p "$OUT/DEBIAN/"
