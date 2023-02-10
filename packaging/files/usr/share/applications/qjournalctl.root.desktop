@@ -1,11 +1,11 @@
 [Desktop Entry]
 Encoding=UTF-8
 Type=Application
-Name=QJournalctl(sudo)
+Name=QJournalctl (root)
 Comment=Graphical User Interface for systemd's journalctl
-Exec=/usr/bin/bash -c "sudo /usr/bin/qjournalctl"
+Exec=pkexec /usr/bin/qjournalctl
 Icon=qjournalctl
-Terminal=true
+Terminal=false
 StartupNotify=false
 Categories=VIGIL;
 Name=qjournalctl (root)

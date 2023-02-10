@@ -2,7 +2,7 @@
 
 NAME=qjournalctl
 VERSION=0.6.3
-PKGREV=3
+PKGREV=4
 OUT="$NAME""_$VERSION-$PKGREV"
 
 

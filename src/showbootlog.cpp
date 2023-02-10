@@ -625,8 +625,6 @@ void ShowBootLog::on_caseCheckBox_clicked()
 
 void ShowBootLog::on_allCheckBox_clicked()
 {
-    if (grepFilterText.length() > 0) {
-        updateBootLog(true);
-    }
+    updateBootLog(true);
 }
 

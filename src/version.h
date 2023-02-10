@@ -9,6 +9,6 @@
 #ifndef VERSION_H
 #define VERSION_H
 
-#define VERSION "0.6.3.3"
+#define VERSION "0.6.3.4"
 
 #endif // VERSION_H
